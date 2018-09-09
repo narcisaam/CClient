@@ -2,6 +2,16 @@ from coapthon.utils import parse_blockwise
 from coapthon import defines
 from coapthon.messages.option import Option
 
+########
+import firebase_admin
+from firebase_admin import credentials
+from firebase_admin import db
+
+firebase_url = 'https://envmonitor-8be0c.firebaseio.com'
+
+cred = credentials.Certificate("/home/nati/Documents/facultate/licenta/firebase/envmonitor-8be0c-firebase-adminsdk-j3pxv-9f53b92cb8.json")
+
+########
 __author__ = 'Giacomo Tanganelli'
 
 
@@ -690,4 +700,22 @@ class Message(object):
             msg += str(opt)
         msg += "Payload: " + "\n"
         msg += str(self._payload) + "\n"
+
+        firebase_admin.initialize_app(cred, {
+            'databaseURL': firebase_url
+        })
+        ref = db.reference('sensors')
+        data_ref = ref.child('Temperature/')
+        result = str(self._payload)
+        if (result.isdigit()):
+            number = int(result) / 100
+            data_ref.set({
+                'title' : 'Temperature',
+                'body' : str(number) + " Celsius",
+            })
+        else:
+            data_ref.set({
+                'title' : 'Hello World',
+                'body' : result,
+            })
         return msg
